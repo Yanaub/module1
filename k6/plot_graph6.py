@@ -13,16 +13,13 @@ FILENAME_RE = re.compile(
     r'(?P<origin>local|server|hlv)_cpu(?P<cpu>\d+(?:\.\d+)?)_w(?P<write>\d+)_r(?P<read>\d+)\.json'
 )
 
-def parse_file_meta(path):
+def parse_meta(path):
     m = FILENAME_RE.match(os.path.basename(path))
-    if not m:
-        return None
+    if not m: return None
     d = m.groupdict()
     d['cpu'] = float(d['cpu'])
-    d['write'] = int(d['write'])
-    d['read'] = int(d['read'])
     d['profile'] = f"{d['write']}/{d['read']}"
-    d['origin'] = 'local->server' if d['origin'] == 'hvl' else 'server->server'
+    d['origin'] = 'local->server' if d['origin'] == 'local' else 'server->server'
     return d
 
 def load_k6_json(path, meta):
@@ -34,23 +31,18 @@ def load_k6_json(path, meta):
             except json.JSONDecodeError:
                 continue
 
-            if d.get('type') != 'Point':
+            if d.get('type') != 'Point' or d.get('metric') != 'http_req_duration':
                 continue
 
-            metric = d.get('metric')
             data = d.get('data', {})
-            tags = data.get('tags', {})
-            value = data.get('value')
+            val = data.get('value')
+            if val is None: continue
 
-            if metric != 'http_req_duration' or value is None:
-                continue
-
+            # Оставляем только нужные поля для агрегации
             rows.append({
-                'time': data.get('time'),
-                'value': value,
-                'scenario': tags.get('scenario'),
-                'operation': tags.get('operation'),
-                'expected_response': tags.get('expected_response'),
+                'value': val,
+                'operation': data.get('tags', {}).get('operation'),
+                'expected_response': str(data.get('tags', {}).get('expected_response', '')).lower(),
                 **meta
             })
     return pd.DataFrame(rows)
@@ -58,56 +50,57 @@ def load_k6_json(path, meta):
 def load_all():
     frames = []
     for path in glob.glob(os.path.join(RESULTS_DIR, '*.json')):
-        meta = parse_file_meta(path)
-        if not meta:
-            continue
-        df = load_k6_json(path, meta)
-        if not df.empty:
-            frames.append(df)
+        meta = parse_meta(path)
+        if meta:
+            df = load_k6_json(path, meta)
+            if not df.empty:
+                frames.append(df)
     return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
 
 def aggregate(df):
-    df = df[df['expected_response'] == 'true'].copy()
-    agg = (
-        df.groupby(['origin', 'profile', 'cpu', 'operation'])['value']
-        .agg(avg='mean', p95=lambda s: s.quantile(0.95), count='count')
-        .reset_index()
+    # Оставляем только успешные запросы и считаем среднее
+    return (
+        df[df['expected_response'] == 'true']
+        .groupby(['origin', 'profile', 'cpu', 'operation'])['value']
+        .mean()
+        .reset_index(name='avg')
         .sort_values(['origin', 'profile', 'operation', 'cpu'])
     )
-    return agg
 
-def plot_metric(agg, metric='avg'):
+def plot_avg(agg):
     profiles = ['5/95', '50/50', '95/5']
     origins = ['local->server', 'server->server']
     ops = [('create', 'POST /visitors/'), ('read', 'GET /exhibits/rating')]
 
     for origin in origins:
         fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharey=True)
-        fig.suptitle(f'{metric.upper()} response time vs CPU cores ({origin})', fontsize=14)
+        fig.suptitle(f'Avg response time vs CPU cores ({origin})', fontsize=14)
 
         for ax, profile in zip(axes, profiles):
             sub = agg[(agg['origin'] == origin) & (agg['profile'] == profile)]
             for op, label in ops:
                 op_df = sub[sub['operation'] == op]
-                if op_df.empty:
-                    continue
-                ax.plot(op_df['cpu'], op_df[metric], marker='o', linewidth=2, label=label)
+                if op_df.empty: continue
+
+                ax.plot(op_df['cpu'], op_df['avg'], marker='o', linewidth=2, label=label)
                 for _, r in op_df.iterrows():
-                    ax.annotate(f"{r[metric]:.1f}", (r['cpu'], r[metric]),
+                    ax.annotate(f"{r['avg']:.1f}", (r['cpu'], r['avg']),
                                 textcoords='offset points', xytext=(0, 8),
                                 ha='center', fontsize=8)
-
             ax.set_title(f'write/read = {profile}')
             ax.set_xlabel('CPU cores')
             ax.grid(True, linestyle='--', alpha=0.4)
-            ax.set_xticks(sorted(sub['cpu'].unique()))
 
-        axes[0].set_ylabel(f'{metric.upper()} response time (ms)')
+            if not sub.empty:
+                ax.set_xticks(sorted(sub['cpu'].unique()))
+
+        axes[0].set_ylabel('Avg response time (ms)')
         handles, labels = axes[0].get_legend_handles_labels()
         if handles:
             fig.legend(handles, labels, loc='upper center', ncol=2)
+
         fig.tight_layout(rect=[0, 0, 1, 0.92])
-        fig.savefig(os.path.join(OUT_DIR, f'{origin.replace("->","_")}_{metric}.png'), dpi=150)
+        fig.savefig(os.path.join(OUT_DIR, f'{origin.replace("->","_")}_avg.png'), dpi=150)
         plt.close(fig)
 
 def main():
@@ -118,9 +111,7 @@ def main():
 
     agg = aggregate(df)
     agg.to_csv(os.path.join(OUT_DIR, 'cpu_scaling_summary.csv'), index=False)
-
-    plot_metric(agg, 'avg')
-    plot_metric(agg, 'p95')
+    plot_avg(agg)
     print('Готово')
 
 if __name__ == '__main__':

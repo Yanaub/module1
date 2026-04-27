@@ -1,21 +1,78 @@
-version: '3.8'
 services:
-  backend:
-    build:
-      dockerfile: Dockerfile
-    container_name: app_m
-    deploy:
-      resources:
-        limits:
-          cpus: "${LIMITS_CPU}"
-          memory: ${LIMITS_MEM}
-        reservations:
-          cpus: "${RESERV_CPU}"
-          memory: ${RESERV_MEM}
+  postgres:
+    image: postgres:16-alpine
+    container_name: museum_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - museum-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U museum_user -d museum"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: museum_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - museum-network
+
+  app:
+    image: yanau/hl:1.0
+    container_name: museum_app
     ports:
       - "8080:8080"
+    cpus: ${APP_CPU_LIMIT}
+    mem_limit: 512m
+    mem_reservation: 256m
+
     env_file:
       - .env
     environment:
-      SERVER_TOMCAT_MAX_THREADS: ${LIMITS_THREADS}
-      SPRING_JPA_SHOW_SQL: "false"
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+
+      - SERVER_TOMCAT_MAX_THREADS=${TOMCAT_MAX_THREADS}
+      - SERVER_TOMCAT_MIN_SPARE_THREADS=${TOMCAT_MIN_SPARE_THREADS}
+
+      - SPRING_FLYWAY_ENABLED=true
+      - SPRING_FLYWAY_LOCATIONS=classpath:db/migration
+
+      - SPRING_JPA_SHOW_SQL=${SHOW_SQL}
+      - SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL=false
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - museum-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  museum-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
