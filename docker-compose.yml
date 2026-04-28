@@ -3,7 +3,7 @@ version: '3.8'
 services:
   app:
     image: yanau/hl:1.0
-    container_name: museum_app
+    container_name: museum-app
     deploy:
       resources:
         limits:
@@ -36,6 +36,6 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - CRUD_SERVICE_URL=http://museum_app:8080
+      - CRUD_SERVICE_URL=http://museum-app:8080
     depends_on:
       - app
