@@ -22,13 +22,7 @@ public class ExhibitController {
     public List<Exhibit> getExhibits() {
         return exhibitService.getAllExhibits();
     }
-    @GetMapping("/exhibits/rating")
-    public Map<String, Integer> getRating(
-            @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) Integer month
-    ) {
-        return exhibitService.ratingExhibits(year, month);
-    }
+
 
     @GetMapping("/exhibits/{id}")
     public Exhibit getExhibitById(@PathVariable String id) {

@@ -1,30 +1,41 @@
+version: '3.8'
+
 services:
   app:
     image: yanau/hl:1.0
     container_name: museum_app
+    deploy:
+      resources:
+        limits:
+          cpus: "${APP_CPU_LIMIT}"
+          memory: ${LIMITS_MEM}
+        reservations:
+          cpus: "${RESERV_CPU}"
+          memory: ${RESERV_MEM}
     ports:
       - "8080:8080"
-    cpus: ${APP_CPU_LIMIT}
-    mem_limit: 512m
-    mem_reservation: 256m
-
     env_file:
       - .env
     environment:
-      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
-      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
-      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
-
       - SERVER_TOMCAT_MAX_THREADS=${TOMCAT_MAX_THREADS}
       - SERVER_TOMCAT_MIN_SPARE_THREADS=${TOMCAT_MIN_SPARE_THREADS}
-
-      - SPRING_FLYWAY_ENABLED=true
-      - SPRING_FLYWAY_LOCATIONS=classpath:db/migration
-
       - SPRING_JPA_SHOW_SQL=${SHOW_SQL}
       - SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL=false
 
-
-    restart: unless-stopped
-
-
+  additional:
+    image: yanau/museum-additional:1.0
+    container_name: museum_additional
+    deploy:
+      resources:
+        limits:
+          cpus: "${ADDITIONAL_CPU_LIMIT}"
+          memory: ${ADDITIONAL_LIMITS_MEM}
+        reservations:
+          cpus: "${ADDITIONAL_RESERV_CPU}"
+          memory: ${ADDITIONAL_RESERV_MEM}
+    ports:
+      - "8081:8081"
+    environment:
+      - CRUD_SERVICE_URL=http://museum_app:8080
+    depends_on:
+      - app

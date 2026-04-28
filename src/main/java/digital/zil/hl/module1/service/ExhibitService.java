@@ -79,37 +79,7 @@ public class ExhibitService {
         return exhibitRepository.save(exhibit);
     }
 
-    public Map<String, Integer> ratingExhibits(Integer year, Integer month) {
-        Map<String, Integer> rating = exhibitRepository.findAll().stream()
-                .collect(Collectors.toMap(Exhibit::getName, e -> 0));
 
-        if (year == null && month == null) {
-            excursionRepository.findAll().stream()
-                    .flatMap(excursion -> excursion.getExhibits().stream())
-                    .forEach(exhibit -> rating.merge(exhibit.getName(), 1, Integer::sum));
-
-            return rating;
-        }
-
-
-        if (year == null || month == null) {
-            throw new IllegalArgumentException("Both year and month must be provided or none of them");
-        }
-        LocalDate startDate = LocalDate.of(year, month, 1);
-        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
-
-        excursionRepository.findAll().stream()
-                .filter(e -> !e.getDate().isBefore(startDate) && !e.getDate().isAfter(endDate))
-                .flatMap(excursion -> excursion.getExhibits().stream())
-                .forEach(exhibit -> rating.merge(exhibit.getName(), 1, Integer::sum));
-
-        return rating;
-    }
-
-    public Map<String, Integer> ratingExhibitsNow() {
-        LocalDate now = LocalDate.now();
-        return ratingExhibits(now.getYear(), now.getMonthValue());
-    }
     public void deleteAll() {
         exhibitRepository.deleteAll();
     }
