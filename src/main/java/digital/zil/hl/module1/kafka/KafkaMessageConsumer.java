@@ -3,32 +3,23 @@ package digital.zil.hl.module1.kafka;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import digital.zil.hl.module1.kafka.dto.KafkaMessage;
 import digital.zil.hl.module1.kafka.handler.EntityKafkaHandler;
-import digital.zil.hl.module1.observability.ObservabilityService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.List;
+
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class KafkaMessageConsumer {
 
-    private final ObjectMapper objectMapper;
     private final Map<String, EntityKafkaHandler> handlers;
-
-
-
+    private final ObjectMapper objectMapper;
     @KafkaListener(
             topics = "${app.kafka.topic}",
             groupId = "${spring.kafka.consumer.group-id}",
@@ -42,6 +33,7 @@ public class KafkaMessageConsumer {
         log.info("Received message from partition {}: {}", partition, rawMessage);
 
         try {
+
             KafkaMessage message = objectMapper.readValue(rawMessage, KafkaMessage.class);
 
             String entity = message.getEntity() == null ? "" : message.getEntity().toUpperCase();
