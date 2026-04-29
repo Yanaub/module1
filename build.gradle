@@ -48,6 +48,7 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-kafka'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'org.springframework.boot:spring-boot-starter-json'
 }
 
 tasks.named('test') {
