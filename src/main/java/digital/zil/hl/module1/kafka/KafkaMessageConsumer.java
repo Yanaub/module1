@@ -25,17 +25,7 @@ public class KafkaMessageConsumer {
     private final ObjectMapper objectMapper;
     private final Map<String, EntityKafkaHandler> handlers;
 
-    public KafkaMessageConsumer(
-            ObjectMapper objectMapper,
-            List<EntityKafkaHandler> handlerList
-    ) {
-        this.objectMapper = objectMapper;
-        this.handlers = handlerList.stream()
-                .collect(Collectors.toMap(
-                        h -> h.entityType().toUpperCase(),
-                        Function.identity()
-                ));
-    }
+
 
     @KafkaListener(
             topics = "${app.kafka.topic}",
