@@ -3,12 +3,9 @@ package digital.zil.hl.module1.kafka.handler;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import digital.zil.hl.module1.model.Visitor;
-import digital.zil.hl.module1.observability.ObservabilityService;
 import digital.zil.hl.module1.service.VisitorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -20,11 +17,6 @@ public class VisitorKafkaHandler implements EntityKafkaHandler {
 
     private final VisitorService visitorService;
     private final ObjectMapper objectMapper;
-
-    public VisitorKafkaHandler(VisitorService visitorService, ObjectMapper objectMapper) {
-        this.visitorService = visitorService;
-        this.objectMapper = objectMapper;
-    }
 
     @Override
     public String entityType() {

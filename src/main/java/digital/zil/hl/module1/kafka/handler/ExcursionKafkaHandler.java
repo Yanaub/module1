@@ -3,12 +3,9 @@ package digital.zil.hl.module1.kafka.handler;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import digital.zil.hl.module1.model.Excursion;
-import digital.zil.hl.module1.observability.ObservabilityService;
 import digital.zil.hl.module1.service.ExcursionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -18,14 +15,9 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 public class ExcursionKafkaHandler implements EntityKafkaHandler {
-    private static final Logger log = LoggerFactory.getLogger(ObservabilityService.class);
+
     private final ExcursionService excursionService;
     private final ObjectMapper objectMapper;
-
-    public ExcursionKafkaHandler(ExcursionService excursionService, ObjectMapper objectMapper) {
-        this.excursionService = excursionService;
-        this.objectMapper = objectMapper;
-    }
 
     @Override
     public String entityType() {
