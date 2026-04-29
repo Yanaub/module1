@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import digital.zil.hl.module1.kafka.dto.KafkaMessage;
 import digital.zil.hl.module1.kafka.handler.EntityKafkaHandler;
 import digital.zil.hl.module1.observability.ObservabilityService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class KafkaMessageConsumer {
 
     private final ObjectMapper objectMapper;
