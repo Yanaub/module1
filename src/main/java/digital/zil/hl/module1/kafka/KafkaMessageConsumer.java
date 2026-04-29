@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class KafkaMessageConsumer {
-    private static final Logger log = LoggerFactory.getLogger(ObservabilityService.class);
+
     private final ObjectMapper objectMapper;
     private final Map<String, EntityKafkaHandler> handlers;
 

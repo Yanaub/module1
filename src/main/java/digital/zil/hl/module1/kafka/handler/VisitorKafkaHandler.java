@@ -17,7 +17,7 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 public class VisitorKafkaHandler implements EntityKafkaHandler {
-    private static final Logger log = LoggerFactory.getLogger(ObservabilityService.class);
+
     private final VisitorService visitorService;
     private final ObjectMapper objectMapper;
 
