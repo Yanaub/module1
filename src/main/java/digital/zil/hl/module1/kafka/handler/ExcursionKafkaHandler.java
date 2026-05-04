@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Slf4j
-@Component
+@Component("EXCURSION")
 @RequiredArgsConstructor
 public class ExcursionKafkaHandler implements EntityKafkaHandler {
 

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.UUID;
 
 @Slf4j
-@Component
+@Component("EXHIBIT")
 @RequiredArgsConstructor
 public class ExhibitKafkaHandler implements EntityKafkaHandler {
 

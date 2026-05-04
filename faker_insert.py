@@ -62,8 +62,8 @@ def clear_endpoint(endpoint: str):
     r.raise_for_status()
 
 def seed_visitors(count: int):
-    clear_endpoint("excursions")
-    clear_endpoint("visitors")
+    #clear_endpoint("excursions")
+    #clear_endpoint("visitors")
     ok = 0
     for i in range(count):
         result = post_one("visitors", make_visitor())
@@ -73,8 +73,8 @@ def seed_visitors(count: int):
 
 
 def seed_exhibits(count: int):
-    clear_endpoint("excursions")
-    clear_endpoint("exhibits")
+    #clear_endpoint("excursions")
+    #clear_endpoint("exhibits")
     used_names: set = set()
     ok = 0
     for i in range(count):
@@ -85,7 +85,7 @@ def seed_exhibits(count: int):
 
 
 def seed_excursions(count: int):
-    clear_endpoint("excursions")
+    #clear_endpoint("excursions")
     visitors_resp = requests.get(f"{BASE_URL}/visitors", timeout=10)
     exhibits_resp = requests.get(f"{BASE_URL}/exhibits", timeout=10)
     visitors_resp.raise_for_status()
