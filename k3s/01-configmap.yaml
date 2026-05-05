@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: hl08
+data:
+
+  POSTGRES_USER: "hl8"
+  POSTGRES_DB: "hl8?currentSchema=hl8"
+  DB_HOST: "10.60.3.9"
+  DB_PORT: "5433"
+
+  KAFKA_HOSTS: "10.60.3.12:9092,10.60.3.13:9092"
+
+  SERVER_TOMCAT_MAX_THREADS: "200"
+  SERVER_TOMCAT_MIN_SPARE_THREADS: "10"
+
+  SPRING_JPA_SHOW_SQL: "false"
+  SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "false"
+  APP_KAFKA_CONCURRENCY: "2"
