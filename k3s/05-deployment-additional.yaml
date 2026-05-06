@@ -30,7 +30,7 @@ spec:
             - "hl15.zil"
       containers:
         - name: museum-additional
-          image: yanau/museum-additional:1.0.1
+          image: yanau/museum-additional:1.0.10
           ports:
             - containerPort: 8081
           resources:

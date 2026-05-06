@@ -6,3 +6,10 @@ metadata:
 data:
 
   CRUD_SERVICE_URL: "http://museum-app:8080"
+  application.properties: |
+    resilience4j.circuitbreaker.instances.callCoreServiceCB.sliding-window-size=10
+    resilience4j.circuitbreaker.instances.callCoreServiceCB.failure-rate-threshold=50
+    resilience4j.circuitbreaker.instances.callCoreServiceCB.wait-duration-in-open-state=PT100S
+    resilience4j.circuitbreaker.instances.callCoreServiceCB.permitted-number-of-calls-in-half-open-state=3
+    resilience4j.circuitbreaker.instances.callCoreServiceCB.automatic-transition-from-open-to-half-open-enabled=true
+    resilience4j.circuitbreaker.instances.callCoreServiceCB.record-exceptions=org.springframework.web.client.ResourceAccessException,java.net.ConnectException,java.util.concurrent.TimeoutException
